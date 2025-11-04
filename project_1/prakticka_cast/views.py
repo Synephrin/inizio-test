@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from .forms import SearchedPhrase
 from bs4 import BeautifulSoup
 import requests
@@ -15,8 +15,8 @@ def index(request):
         # Validace formuláře pomocí Djanga
         if form.is_valid():
             base_url = f"http://www.google.com/search?q={form.cleaned_data["input_text"]}"
-            find_soup(base_url)
-            return HttpResponseRedirect("/")
+            data = find_soup(base_url)
+            return save_csv(data)
     form = SearchedPhrase()
     return render(request, "prakticka_cast/index.html",{
                   "search_form": form
@@ -41,11 +41,13 @@ def find_soup(url_link):
                 "title": headline.get_text(strip=True),
                 "url": link["href"],
             })
-    save_csv(data)
+    return data[1::3]
 
 def save_csv(data):
-    new_data = data[1::3]
-    with open("results.csv", "w", encoding="UTF-8") as file:
-        writer = csv.DictWriter(file, fieldnames=["title","url"])
-        writer.writeheader()
-        writer.writerows(new_data)
+    response = HttpResponse(content_type="text/csv"; charset="utf-8")
+    response["Content-Disposition"] = "attachment"; filename="results.csv"
+
+    writer = csv.DictWriter(response, fieldnames=["title", "url"])
+    writer.writeHeader()
+    writer.writerows(data)
+    return response
