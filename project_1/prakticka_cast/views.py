@@ -44,10 +44,10 @@ def find_soup(url_link):
     return data[1::3]
 
 def save_csv(data):
-    response = HttpResponse(content_type="text/csv"; charset="utf-8")
-    response["Content-Disposition"] = "attachment"; filename="results.csv"
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = 'attachment; filename="results.csv"'
 
     writer = csv.DictWriter(response, fieldnames=["title", "url"])
-    writer.writeHeader()
+    writer.writeheader()
     writer.writerows(data)
     return response
